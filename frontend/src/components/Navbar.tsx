@@ -33,7 +33,7 @@ export const Navbar = () => {
               onClick={() => navigate("/")}
             >
               <img src={logo} alt="TalentBridge Logo" className="h-10 w-10 mr-2" />
-              <span className="font-bold text-xl text-foreground">TalentBridge</span>
+              <span className="font-bold text-xl text-foreground">JobKonnect.io</span>
             </div>
 
             <div className="hidden md:flex items-center space-x-6">
