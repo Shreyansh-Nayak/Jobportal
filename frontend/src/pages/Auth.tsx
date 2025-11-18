@@ -102,12 +102,12 @@ export default function Auth() {
     }
 
     try {
+      // Store role temporarily for post-OAuth setup
+      localStorage.setItem('pending_role', selectedRole);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          data: {
-            role: selectedRole,
-          },
           redirectTo: `${window.location.origin}/`,
         },
       });
@@ -142,12 +142,12 @@ export default function Auth() {
     }
 
     try {
+      // Store role temporarily for post-OAuth setup
+      localStorage.setItem('pending_role', selectedRole);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "linkedin_oidc",
         options: {
-          data: {
-            role: selectedRole,
-          },
           redirectTo: `${window.location.origin}/`,
         },
       });

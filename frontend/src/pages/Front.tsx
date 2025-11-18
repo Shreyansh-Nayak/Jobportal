@@ -4,11 +4,21 @@ import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Search, Building2, Briefcase, Users, TrendingUp, Star, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { EnhancedSearchBar } from '@/components/EnhancedSearchBar';
+import { toast } from 'sonner';
 
 const Front = () => {
   const navigate = useNavigate();
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [searchLocation, setSearchLocation] = useState('');
+
+  const handleSearch = (keyword: string, location: string, category: string) => {
+    console.log('Search params:', { keyword, location, category });
+    const searchMsg = keyword 
+      ? `Searching for "${keyword}" jobs${location && location !== 'All Cities' ? ` in ${location}` : ''}`
+      : `Searching for jobs${location && location !== 'All Cities' ? ` in ${location}` : ''}`;
+    toast.success(searchMsg);
+    // TODO: Navigate to jobs page with search params
+    // navigate(`/jobs?keyword=${encodeURIComponent(keyword)}&location=${encodeURIComponent(location)}&category=${category}`);
+  };
 
   const categories = [
     { icon: <Briefcase className="w-8 h-8" />, title: 'Development & IT', count: '2,500+ jobs' },
@@ -101,37 +111,10 @@ const Front = () => {
                 </div>
               </div>
               
-              {/* Search Bar */}
-              <Card className="p-6 shadow-2xl border-primary/20 animate-scale-in">
-                <CardContent className="p-0">
-                  <div className="flex flex-col md:flex-row gap-3">
-                    <div className="flex-1 flex items-center gap-3 px-5 py-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors border border-border/50">
-                      <Search className="w-5 h-5 text-primary" />
-                      <input
-                        type="text"
-                        placeholder="Job title or keywords"
-                        className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground"
-                        value={searchKeyword}
-                        onChange={(e) => setSearchKeyword(e.target.value)}
-                      />
-                    </div>
-                    <div className="flex-1 flex items-center gap-3 px-5 py-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors border border-border/50">
-                      <Building2 className="w-5 h-5 text-primary" />
-                      <input
-                        type="text"
-                        placeholder="City or location"
-                        className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground"
-                        value={searchLocation}
-                        onChange={(e) => setSearchLocation(e.target.value)}
-                      />
-                    </div>
-                    <Button size="lg" className="px-10 shadow-lg hover:shadow-xl transition-shadow">
-                      <Search className="w-5 h-5 mr-2" />
-                      Search
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Enhanced Search Bar */}
+              <div className="animate-scale-in">
+                <EnhancedSearchBar onSearch={handleSearch} />
+              </div>
 
               <div className="flex flex-wrap gap-3 items-center animate-fade-in delay-200">
                 <span className="text-sm font-medium text-muted-foreground">Popular searches:</span>
