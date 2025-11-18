@@ -1,11 +1,42 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Code, TrendingUp, Headphones, Palette, Scale, Rocket, Building2, Zap, Users, BookOpen, MessageSquare, UserCircle } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, Code, TrendingUp, Headphones, Palette, Scale, Rocket, Building2, Zap, Users, BookOpen, MessageSquare, UserCircle, LogOut, LayoutDashboard } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { ThemeToggle } from "./ThemeToggle";
 
 export const Navbar = () => {
   const navigate = useNavigate();
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   const jobCategories = [
     { name: "Development & IT", icon: Code },
@@ -33,7 +64,7 @@ export const Navbar = () => {
               onClick={() => navigate("/")}
             >
               <img src={logo} alt="TalentBridge Logo" className="h-10 w-10 mr-2" />
-              <span className="font-bold text-xl text-foreground">JobKonnect.io</span>
+              <span className="font-bold text-xl text-primary">JobKonnect.io</span>
             </div>
 
             <div className="hidden md:flex items-center space-x-6">
@@ -125,12 +156,43 @@ export const Navbar = () => {
 
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <Button variant="ghost" onClick={() => navigate("/auth")}>
-              Login
-            </Button>
-            <Button onClick={() => navigate("/auth")}>
-              Post a Job
-            </Button>
+            {!session ? (
+              <>
+                <Button variant="ghost" onClick={() => navigate("/auth")}>
+                  Login
+                </Button>
+                <Button onClick={() => navigate("/auth")}>
+                  Post a Job
+                </Button>
+              </>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center">
+                    <UserCircle className="h-6 w-6 mr-2" />
+                    My Account
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>{session.user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate(session.user.user_metadata.role === 'job_seeker' ? '/seeker-dashboard' : '/employer-dashboard')}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <UserCircle className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </div>

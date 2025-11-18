@@ -94,16 +94,33 @@ export default function Auth() {
     }
   };
 
-  const handleSocialAuth = async (provider: "google" | "apple") => {
+  // Handler for Social Auth during SIGN UP (requires role)
+  const handleSocialSignUp = async (provider: "google" | "apple") => {
     if (!selectedRole) {
       toast.error("Please select a role first");
       return;
     }
 
     try {
-      // Store role temporarily for OAuth callback
-      localStorage.setItem("pendingRole", selectedRole);
-      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          data: {
+            role: selectedRole,
+          },
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error(error.message || `Failed to sign in with ${provider}`);
+    }
+  };
+
+  // Handler for Social Auth during SIGN IN (does not require role)
+  const handleSocialSignIn = async (provider: "google" | "apple") => {
+    try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -117,16 +134,33 @@ export default function Auth() {
     }
   };
 
-  const handleLinkedInAuth = async () => {
+  // Handler for LinkedIn Auth during SIGN UP (requires role)
+  const handleLinkedInSignUp = async () => {
     if (!selectedRole) {
       toast.error("Please select a role first");
       return;
     }
 
     try {
-      // Store role temporarily for OAuth callback
-      localStorage.setItem("pendingRole", selectedRole);
-      
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "linkedin_oidc",
+        options: {
+          data: {
+            role: selectedRole,
+          },
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast.error(error.message || "Failed to sign in with LinkedIn");
+    }
+  };
+
+  // Handler for LinkedIn Auth during SIGN IN (does not require role)
+  const handleLinkedInSignIn = async () => {
+    try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "linkedin_oidc",
         options: {
@@ -164,19 +198,19 @@ export default function Auth() {
           {/* Social Auth Buttons */}
           <div className="flex gap-3 mb-6">
             <button
-              onClick={() => handleSocialAuth("google")}
+              onClick={() => handleSocialSignIn("google")}
               className="flex-1 p-3 border border-border rounded-lg hover:bg-accent transition-colors flex items-center justify-center"
             >
               <FcGoogle size={24} />
             </button>
             <button
-              onClick={() => handleSocialAuth("apple")}
+              onClick={() => handleSocialSignIn("apple")}
               className="flex-1 p-3 border border-border rounded-lg hover:bg-accent transition-colors flex items-center justify-center"
             >
               <BsApple size={24} className="text-foreground" />
             </button>
             <button
-              onClick={handleLinkedInAuth}
+              onClick={handleLinkedInSignIn}
               className="flex-1 p-3 border border-border rounded-lg hover:bg-accent transition-colors flex items-center justify-center"
             >
               <BsLinkedin size={24} className="text-[#0A66C2]" />
@@ -277,19 +311,19 @@ export default function Auth() {
               {/* Social Auth Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={() => handleSocialAuth("google")}
+                  onClick={() => handleSocialSignUp("google")}
                   className="flex-1 p-3 border border-border rounded-lg hover:bg-accent transition-colors flex items-center justify-center"
                 >
                   <FcGoogle size={24} />
                 </button>
                 <button
-                  onClick={() => handleSocialAuth("apple")}
+                  onClick={() => handleSocialSignUp("apple")}
                   className="flex-1 p-3 border border-border rounded-lg hover:bg-accent transition-colors flex items-center justify-center"
                 >
                   <BsApple size={24} className="text-foreground" />
                 </button>
                 <button
-                  onClick={handleLinkedInAuth}
+                  onClick={handleLinkedInSignUp}
                   className="flex-1 p-3 border border-border rounded-lg hover:bg-accent transition-colors flex items-center justify-center"
                 >
                   <BsLinkedin size={24} className="text-[#0A66C2]" />

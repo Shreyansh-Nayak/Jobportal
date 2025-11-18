@@ -1,67 +1,16 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { toast } from "sonner";
-import { PlusCircle, Users, FileText, LogOut } from "lucide-react";
+import { PlusCircle, Users, FileText } from "lucide-react";
 
 export default function EmployerDashboard() {
-  const navigate = useNavigate();
-  const [userName, setUserName] = useState("");
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile) {
-      if (profile.role !== "employer") {
-        navigate("/seeker-dashboard");
-        return;
-      }
-      setUserName(profile.full_name || "");
-    }
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast.success("Signed out successfully");
-    navigate("/");
-  };
-
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-primary">JobConnect</h1>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Button variant="ghost" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Welcome, {userName}!</h2>
+          <h2 className="text-3xl font-bold mb-2">Welcome!</h2>
           <p className="text-muted-foreground">Manage your job postings and candidates</p>
         </div>
 
