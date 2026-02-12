@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Search, Briefcase, Users, TrendingUp } from "lucide-react";
@@ -10,71 +10,50 @@ export default function Index() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    checkAuth();
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        // Check if this is a new OAuth user
-        const pendingRole = localStorage.getItem("pendingRole");
-        
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        if (!profile && pendingRole) {
-          // Create profile for OAuth user
-          await supabase.from("profiles").insert({
-            id: session.user.id,
-            email: session.user.email!,
-            full_name: session.user.user_metadata.full_name || session.user.user_metadata.name,
-            role: pendingRole as "job_seeker" | "employer",
-          });
-          
-          localStorage.removeItem("pendingRole");
-          navigate(pendingRole === "job_seeker" ? "/seeker-dashboard" : "/employer-dashboard");
-        } else if (profile) {
-          navigate(profile.role === "job_seeker" ? "/seeker-dashboard" : "/employer-dashboard");
-        }
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
       }
-    });
 
-    return () => subscription.unsubscribe();
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/auth/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("Unauthorized");
+
+        const { user } = await res.json();
+
+        setIsAuthenticated(true);
+
+        navigate(
+          user.role === "job_seeker"
+            ? "/seeker-dashboard"
+            : "/employer-dashboard"
+        );
+      } catch (error) {
+        localStorage.removeItem("token");
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
   }, [navigate]);
 
-  const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (user) {
-      setIsAuthenticated(true);
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-      if (profile) {
-        navigate(profile.role === "job_seeker" ? "/seeker-dashboard" : "/employer-dashboard");
-      }
-    }
-  };
+//   return null; // or a loading spinner / landing UI
+// }
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b bg-card/50 backdrop-blur-sm fixed w-full z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-hero-gradient bg-clip-text text-transparent">
-            JobConnect
-          </h1>
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            {!isAuthenticated && (
-              <Button onClick={() => navigate("/auth")}>Get Started</Button>
-            )}
-          </div>
-        </div>
-      </nav>
+      
 
       <main className="pt-20">
         <section className="container mx-auto px-4 py-20 text-center">

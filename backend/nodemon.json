@@ -1,0 +1,10 @@
+{
+    "legacyWatch": true,
+    "ignore": [
+        "node_modules",
+        "dist",
+        ".git"
+    ],
+    "ext": "js,json",
+    "exec": "node"
+}

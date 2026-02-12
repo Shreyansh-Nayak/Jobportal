@@ -155,3 +155,5 @@ vite.config.ts.timestamp-*
 *.njsproj
 *.sln
 *.sw?
+
+firebase-admin-key.json
